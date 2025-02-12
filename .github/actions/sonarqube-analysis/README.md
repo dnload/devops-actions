@@ -31,14 +31,25 @@ SonarQube 정적 코드 분석을 실행하는 액션입니다.
     sonar_coverage_exclusions: "**/*.spec.ts"
 ```
 
-**주요 입력 변수:**
+**필수 입력 변수:**
 
-- `sonar_token`: SonarQube 인증 토큰
-- `sonar_host_url`: SonarQube 서버 URL
-- `sonar_project_key`: 프로젝트 키
-- `sonar_project_name`: 프로젝트 이름
-- `analysis_sources`: 분석할 소스 코드 경로
-- `is_build_wrapper`: C/C++ 빌드 래퍼 사용 여부
-- `is_rust_project`: Rust 프로젝트 여부
-- `sonar_exclusions`: 분석에서 제외할 파일 패턴
-- `sonar_coverage_exclusions`: 커버리지 분석에서 제외할 파일 패턴
+| 변수명               | 설명                  |
+| -------------------- | --------------------- |
+| `sonar_token`        | SonarQube 인증 토큰   |
+| `sonar_host_url`     | SonarQube 서버 URL    |
+| `sonar_project_key`  | 프로젝트 키           |
+| `sonar_project_name` | 프로젝트 이름         |
+| `analysis_sources`   | 분석할 소스 코드 경로 |
+
+**선택적 입력 변수:**
+
+| 변수명                       | 기본값               | 설명                                                                       |
+| ---------------------------- | -------------------- | -------------------------------------------------------------------------- |
+| `is_build_wrapper`           | "false"              | C/C++ 빌드 래퍼 사용 여부                                                  |
+| `build_command`              | ""                   | 빌드 명령어 (ex: /usr/bin/python3 ./run_test.py --build --test --coverage) |
+| `bw_output_path`             | "./bw-output"        | 빌드 래퍼 출력 경로                                                        |
+| `is_rust_project`            | "false"              | Rust 프로젝트 여부                                                         |
+| `clippy_report_path`         | "clippy-report.json" | Clippy 리포트 경로                                                         |
+| `sonar_exclusions`           | ""                   | 분석에서 제외할 파일 패턴                                                  |
+| `sonar_coverage_exclusions`  | ""                   | 커버리지 분석에서 제외할 파일 패턴                                         |
+| `sonar_llvm_cov_report_path` | ""                   | LLVM 커버리지 리포트 경로                                                  |
