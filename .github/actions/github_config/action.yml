@@ -1,0 +1,26 @@
+# .github/actions/github-api/action.yml
+
+name: Github Config
+description: Set git config --global user.email, user.name and user.password
+
+inputs:
+  user_email:
+    description: "User email"
+    required: true
+  user_name:
+    description: "User name"
+    required: true
+  user_pat:
+    description: "User PAT"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Config git
+      shell: bash
+      run: |
+        git config --global user.email ${{ inputs.user_email }}
+        git config --global user.name ${{ inputs.user_name }}
+        git config --global credential.helper store
+        echo "https://${{ inputs.user_name }}:${{ inputs.user_pat }}@github.com" > ~/.git-credentials

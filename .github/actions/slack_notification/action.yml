@@ -1,0 +1,39 @@
+name: Send Slack notification
+description: Post slack message or schedule message to a slack channel
+inputs:
+  slack_from:
+    description: 'Slack bot from send notifications'
+    required: true
+  slack_channel:
+    description: 'Slack channel to send notifications'
+    required: true
+  message:
+    description: 'Slack message'
+    required: true
+  schedule_time:
+    description: 'Slack schedule message'
+    default: ''
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - name: Send Slack notification
+      shell: bash
+      env:
+        SLACK_FROM: ${{ inputs.slack_from }}
+        SLACK_CHANNEL: ${{ inputs.slack_channel }}
+        MESSAGE: ${{ inputs.message }}
+        SCHEDULE_TIME: ${{ inputs.schedule_time }}
+      run: |
+        POST_URL="https://message.rt.dnotitia.ai/slack/send_message"
+        POST_DATA=$(jq -n \
+          --arg from_ "$SLACK_FROM" \
+          --arg to "$SLACK_CHANNEL" \
+          --arg message "$MESSAGE" \
+          --arg schedule_time "$SCHEDULE_TIME" \
+          '{from_: $from_, to: $to, message: $message, schedule_time: $schedule_time}')
+
+        curl -X POST $POST_URL \
+          -H 'Content-Type: application/json' \
+          --data "$POST_DATA"

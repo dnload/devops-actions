@@ -1,0 +1,54 @@
+# .github/actions/github-api/action.yml
+
+name: Github API
+description: Generic GitHub API Caller
+
+inputs:
+  github_token:
+    description: "GitHub token"
+    required: true
+  endpoint:
+    description: "API endpoint path (e.g., /check-runs/{check_run_id})"
+    required: true
+  method:
+    description: "HTTP method (GET, POST, PATCH, DELETE)"
+    required: false
+    default: "GET"
+  body:
+    description: "Request body for POST or PATCH methods"
+    required: false
+    default: ""
+  silent:
+    description: "Use silent mode for curl"
+    required: false
+    default: "true"
+
+outputs:
+  body:
+    value: ${{ steps.github_api_call.outputs.body }}
+    description: "Response body from the API call"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Call GitHub API
+      shell: bash
+      id: github_api_call
+      run: |
+        BASE_URL="https://api.github.com/repos/${{ github.repository }}"
+        ENDPOINT="${{ inputs.endpoint }}"
+        METHOD="${{ inputs.method }}"
+        TOKEN="${{ inputs.github_token }}"
+        SILENT_OPTION=""
+        if [[ "${{ inputs.silent }}" == "true" ]]; then
+          SILENT_OPTION="-s"
+        fi
+
+        FULL_URL="${BASE_URL}${ENDPOINT}"
+        RESPONSE=$(curl $SILENT_OPTION -X "$METHOD" -H "Authorization: token $TOKEN" \
+                     -H "Accept: application/vnd.github+json" \
+                     -H "X-GitHub-Api-Version: 2022-11-28" \
+                     -d '${{ inputs.body }}' \
+                     "$FULL_URL")
+        BODY_PARSED=$(echo "$RESPONSE" | jq -c '.' | sed 's/"/\\"/g')
+        echo "body=$BODY_PARSED" >> $GITHUB_OUTPUT
