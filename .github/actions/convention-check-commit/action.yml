@@ -23,10 +23,19 @@ runs:
       shell: bash
       run: |
         echo "Fetching PR commits..."
-        PR_COMMITS_URL=${{ inputs.pull_request_url }}/commits
+        PR_COMMITS_URL="${{ inputs.pull_request_url }}"
         echo "Commits URL: $PR_COMMITS_URL"
-        curl -H "Authorization: token ${{ inputs.token }}" $PR_COMMITS_URL > commits.json
-        jq -r '.[].commit.message | split("\n")[0]' commits.json | while read commit_message; do
+        
+        RESPONSE=$(curl -s -H "Authorization: token ${{ inputs.token }}" $PR_COMMITS_URL)
+        if ! echo "$RESPONSE" | jq empty; then
+          echo "Error: Invalid JSON response from GitHub API"
+          echo "Response: $RESPONSE"
+          exit 1
+        fi
+        
+        echo "$RESPONSE" | jq -r '.[].commit.message | split("\n")[0]' | while read commit_message; do
+          [ -z "$commit_message" ] && continue
+          
           echo "Checking commit message: $commit_message"
           if ! echo "$commit_message" | grep -Eq "${{ inputs.commit_message_pattern }}"; then
             if ! echo "$commit_message" | grep -Eq "${{ inputs.etc_pattern }}"; then
