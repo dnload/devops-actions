@@ -28,12 +28,12 @@ inputs:
     description: 'Build wrapper output path'
     required: false
     default: "./bw-output"
-  sonar_exclusion:
-    description: 'Sonar exclusion'
+  sonar_exclusions:
+    description: 'Sonar exclusions'
     required: false
     default: ""
-  sonar_coverage_exclusion:
-    description: 'Sonar coverage exclusion'
+  sonar_coverage_exclusions:
+    description: 'Sonar coverage exclusions'
     required: false
     default: ""
   sonar_llvm_cov_report_path:
