@@ -106,21 +106,26 @@ runs:
         fi
 
         # 제외 패턴 추가
-        if [ ! -z "${{ inputs.sonar_exclusion }}" ]; then
+        if [ ! -z "${{ inputs.sonar_exclusions }}" ]; then
           SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
-            -Dsonar.exclusions=${{ inputs.sonar_exclusion }}"
+            -Dsonar.exclusions=${{ inputs.sonar_exclusions }}"
         fi
 
         # 커버리지 제외 패턴 추가
-        if [ ! -z "${{ inputs.sonar_coverage_exclusion }}" ]; then
+        if [ ! -z "${{ inputs.sonar_coverage_exclusions }}" ]; then
           SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
-            -Dsonar.coverage.exclusions=${{ inputs.sonar_coverage_exclusion }}"
+            -Dsonar.coverage.exclusions=${{ inputs.sonar_coverage_exclusions }}"
         fi
 
         # LLVM 커버리지 리포트 경로 추가
         if [ ! -z "${{ inputs.sonar_llvm_cov_report_path }}" ]; then
           SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
             -Dsonar.cfamily.llvm-cov.reportPath=${{ inputs.sonar_llvm_cov_report_path }}"
+        fi
+
+        if [ "${{ inputs.sonar_quality_gate }}" == "true" ]; then
+          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
+            -Dsonar.qualitygate.wait=true"
         fi
 
         sonar-scanner $SONAR_SCANNER_OPTS
