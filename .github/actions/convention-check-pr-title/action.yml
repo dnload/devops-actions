@@ -1,0 +1,30 @@
+name: PR Title Convention Checker
+description: Check PR title convention
+
+inputs:
+  pr_title:
+    description: "PR title"
+    required: true
+  pr_title_pattern:
+    description: "PR title pattern"
+    required: true
+  etc_pattern:
+    description: "Etc pattern"
+    required: true
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Commit message check
+      shell: bash
+      run: |
+          PR_TITLE="${{ inputs.pr_title }}"
+          echo "Checking PR title: $PR_TITLE"
+          if ! echo "${{ inputs.pr_title }}" | grep -Eq "${{ inputs.pr_title_pattern }}"; then
+            if ! echo "${{ inputs.pr_title }}" | grep -Eq "${{ inputs.etc_pattern }}"; then
+              echo "PR title does not match the required format."
+              exit 1
+            fi
+          fi
+          echo "PR title matches the required format."

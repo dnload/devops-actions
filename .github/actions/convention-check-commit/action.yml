@@ -1,0 +1,33 @@
+name: Commit Message Checker
+description: Check commit message convention
+
+inputs:
+  commit_message_pattern:
+    description: "Commit message pattern"
+    required: true
+  etc_pattern:
+    description: "Etc pattern"
+    required: true
+
+
+runs:
+  using: "composite"
+  steps:
+    - name: Commit message check
+      shell: bash
+      run: |
+        echo "Fetching PR commits..."
+        PR_COMMITS_URL=${{ github.event.pull_request.commits_url }}
+        echo "Commits URL: $PR_COMMITS_URL"
+        curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" $PR_COMMITS_URL > commits.json
+        jq -r '.[].commit.message | split("\n")[0]' commits.json | while read commit_message; do
+          echo "Checking commit message: $commit_message"
+          if ! echo "$commit_message" | grep -Eq "${{ env.COMMIT_MESSAGE_PATTERN }}"; then
+            if ! echo "$commit_message" | grep -Eq "${{ env.ETC_PATTERN }}"; then
+              echo "Commit message does not match the required format."
+              echo "$commit_message"
+              exit 1
+            fi
+          fi
+        done
+        echo "All commit messages match the required format."
