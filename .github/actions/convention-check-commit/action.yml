@@ -8,6 +8,9 @@ inputs:
   etc_pattern:
     description: "Etc pattern"
     required: true
+  pull_request_url:
+    description: "Pull request URL"
+    required: true
 
 
 runs:
@@ -17,13 +20,13 @@ runs:
       shell: bash
       run: |
         echo "Fetching PR commits..."
-        PR_COMMITS_URL=${{ github.event.pull_request.commits_url }}
+        PR_COMMITS_URL=${{ inputs.pull_request_url }}/commits
         echo "Commits URL: $PR_COMMITS_URL"
         curl -H "Authorization: token ${{ secrets.GH_TOKEN }}" $PR_COMMITS_URL > commits.json
         jq -r '.[].commit.message | split("\n")[0]' commits.json | while read commit_message; do
           echo "Checking commit message: $commit_message"
-          if ! echo "$commit_message" | grep -Eq "${{ env.COMMIT_MESSAGE_PATTERN }}"; then
-            if ! echo "$commit_message" | grep -Eq "${{ env.ETC_PATTERN }}"; then
+          if ! echo "$commit_message" | grep -Eq "${{ inputs.commit_message_pattern }}"; then
+            if ! echo "$commit_message" | grep -Eq "${{ inputs.etc_pattern }}"; then
               echo "Commit message does not match the required format."
               echo "$commit_message"
               exit 1
