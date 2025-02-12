@@ -130,3 +130,4 @@ runs:
       uses: sonarsource/sonarqube-quality-gate-action@master
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
+        SONAR_HOST_URL: ${{ inputs.sonar_host_url }}
