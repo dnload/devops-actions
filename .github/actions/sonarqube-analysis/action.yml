@@ -48,6 +48,10 @@ inputs:
     description: 'Clippy report path'
     required: false
     default: "clippy-report.json"
+  sonar_quality_gate:
+    description: 'Sonar quality gate'
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -120,3 +124,9 @@ runs:
         fi
 
         sonar-scanner $SONAR_SCANNER_OPTS
+
+    - name: SonarQube Quality Gate
+      if: ${{ inputs.sonar_quality_gate == 'true' }}
+      uses: sonarsource/sonarqube-quality-gate-action@master
+      env:
+        SONAR_TOKEN: ${{ inputs.sonar_token }}

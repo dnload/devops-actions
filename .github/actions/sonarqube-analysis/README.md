@@ -29,6 +29,8 @@ SonarQube 정적 코드 분석을 실행하는 액션입니다.
     # 제외 패턴
     sonar_exclusions: "**/*.test.ts"
     sonar_coverage_exclusions: "**/*.spec.ts"
+    # SonarQube 퀄리티 게이트 옵션
+    sonar_quality_gate: "true"
 ```
 
 **필수 입력 변수:**
@@ -53,3 +55,4 @@ SonarQube 정적 코드 분석을 실행하는 액션입니다.
 | `sonar_exclusions`           | ""                   | 분석에서 제외할 파일 패턴                                                  |
 | `sonar_coverage_exclusions`  | ""                   | 커버리지 분석에서 제외할 파일 패턴                                         |
 | `sonar_llvm_cov_report_path` | ""                   | LLVM 커버리지 리포트 경로                                                  |
+| `sonar_quality_gate`         | "false"              | SonarQube 퀄리티 게이트 사용 여부                                          |
