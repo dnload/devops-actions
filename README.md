@@ -4,10 +4,10 @@
 
 ## 사용 가능한 Actions
 
-- [SonarQube Analysis](.github/actions/sonarqube-analysis/README.md)
-- [Slack Notification](.github/actions/slack-notification/README.md)
-- [Convention Check](.github/actions/convention-check-commit/README.md)
-- [Convention Check PR Title](.github/actions/convention-check-pr-title/README.md)
-- [PR Auto Labeler](.github/actions/pr-auto-labeler/README.md)
-- [Github Config](.github/actions/github-config/README.md)
-- [Github API](.github/actions/github-api/README.md)
+- [SonarQube Analysis](.github/actions/sonarqube-analysis/)
+- [Slack Notification](.github/actions/slack-notification/)
+- [Convention Check](.github/actions/convention-check-commit/)
+- [Convention Check PR Title](.github/actions/convention-check-pr-title/)
+- [PR Auto Labeler](.github/actions/pr-auto-labeler/)
+- [Github Config](.github/actions/github-config/)
+- [Github API](.github/actions/github-api/)
