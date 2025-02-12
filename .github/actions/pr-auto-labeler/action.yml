@@ -18,6 +18,7 @@ runs:
   using: "composite"
   steps:
     - name: Extract type from PR title
+      shell: bash
       run: |
         PR_TITLE="${{ inputs.pr_title }}"
         PR_PATTERN="${{ inputs.commit_message_pattern }}"
