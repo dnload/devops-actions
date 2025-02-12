@@ -133,3 +133,96 @@ PR 제목을 기반으로 자동으로 라벨을 추가하는 액션입니다.
 - PR 제목이 지정된 패턴과 일치하면 해당 타입을 라벨로 추가
 - 기본 패턴은 Conventional Commits 형식을 따름
 - 예: "feat: 새로운 기능 추가" → "feat" 라벨 추가
+
+### SonarQube Analysis
+
+SonarQube 정적 코드 분석을 실행하는 액션입니다.
+
+**기능:**
+
+- SonarQube 스캐너를 사용한 코드 분석
+- C/C++ 프로젝트를 위한 빌드 래퍼 지원
+- Rust 프로젝트를 위한 Clippy 분석 지원
+- LLVM 커버리지 리포트 통합
+- 소스 코드 및 커버리지 제외 패턴 설정
+
+**사용 예시:**
+
+```yaml
+- uses: dnload/devops-actions/.github/actions/sonarqube-analysis@main
+  with:
+    sonar_token: ${{ secrets.SONAR_TOKEN }}
+    sonar_host_url: "https://sonarqube.example.com"
+    sonar_project_key: "my-project"
+    sonar_project_name: "My Project"
+    analysis_sources: "src"
+    # C/C++ 프로젝트 옵션
+    is_build_wrapper: "true"
+    build_command: "make"
+    # Rust 프로젝트 옵션
+    is_rust_project: "true"
+    clippy_report_path: "clippy-report.json"
+    # 제외 패턴
+    sonar_exclusions: "**/*.test.ts"
+    sonar_coverage_exclusions: "**/*.spec.ts"
+```
+
+**주요 입력 변수:**
+
+- `sonar_token`: SonarQube 인증 토큰
+- `sonar_host_url`: SonarQube 서버 URL
+- `sonar_project_key`: 프로젝트 키
+- `sonar_project_name`: 프로젝트 이름
+- `analysis_sources`: 분석할 소스 코드 경로
+- `is_build_wrapper`: C/C++ 빌드 래퍼 사용 여부
+- `is_rust_project`: Rust 프로젝트 여부
+- `sonar_exclusions`: 분석에서 제외할 파일 패턴
+- `sonar_coverage_exclusions`: 커버리지 분석에서 제외할 파일 패턴
+
+### Convention Check
+
+커밋 메시지와 PR 제목의 컨벤션을 검사하는 액션입니다.
+
+**기능:**
+
+- 커밋 메시지 컨벤션 검사
+- PR 제목 컨벤션 검사
+- 커스텀 패턴 지원
+- 예외 패턴 지원
+
+**커밋 메시지 검사 사용 예시:**
+
+```yaml
+- uses: dnload/devops-actions/.github/actions/convention-check-commit@main
+  with:
+    commit_message_pattern: "^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: .+"
+    etc_pattern: "^(Merge|Release|Revert) .+"
+    pull_request_url: ${{ github.event.pull_request.commits_url }}
+    token: ${{ secrets.GITHUB_TOKEN }}
+```
+
+**PR 제목 검사 사용 예시:**
+
+```yaml
+- uses: dnload/devops-actions/.github/actions/convention-check-pr-title@main
+  with:
+    pr_title: ${{ github.event.pull_request.title }}
+    pr_title_pattern: "^(feat|fix|docs|style|refactor|test|chore)(\(.+\))?: .+"
+    etc_pattern: "^(Merge|Release|Revert) .+"
+```
+
+**주요 입력 변수:**
+
+- `commit_message_pattern`: 커밋 메시지 검사 패턴
+- `pr_title_pattern`: PR 제목 검사 패턴
+- `etc_pattern`: 예외 허용 패턴
+- `pull_request_url`: PR의 커밋 목록 URL
+- `token`: GitHub 토큰
+- `pr_title`: PR 제목
+
+**패턴 예시:**
+
+- `feat: 새로운 기능 추가`
+- `fix(auth): 로그인 버그 수정`
+- `docs: README 업데이트`
+- `Merge pull request #123`
