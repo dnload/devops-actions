@@ -1,0 +1,122 @@
+name: SonarQube Analysis
+description: Run SonarQube analysis
+inputs:
+  sonar_token:
+    description: 'SonarQube token'
+    required: true
+  sonar_host_url:
+    description: 'SonarQube host URL'
+    required: true
+  sonar_project_key:
+    description: 'SonarQube project key'
+    required: true
+  sonar_project_name:
+    description: 'SonarQube project name'
+    required: true
+  analysis_sources:
+    description: 'Analysis sources'
+    required: true
+  is_build_wrapper:
+    description: 'Is build wrapper'
+    required: false
+    default: "false"
+  build_command:
+    description: 'Build command'
+    required: false
+    default: ""
+  bw_output_path:
+    description: 'Build wrapper output path'
+    required: false
+    default: "./bw-output"
+  sonar_exclusion:
+    description: 'Sonar exclusion'
+    required: false
+    default: ""
+  sonar_coverage_exclusion:
+    description: 'Sonar coverage exclusion'
+    required: false
+    default: ""
+  sonar_llvm_cov_report_path:
+    description: 'Sonar LLVM coverage report path'
+    required: false
+    default: ""
+  is_rust_project:
+    description: 'Is Rust project'
+    required: false
+    default: "false"
+  clippy_report_path:
+    description: 'Clippy report path'
+    required: false
+    default: "clippy-report.json"
+
+runs:
+  using: "composite"
+  steps:
+    # Install sonar-scanner and build-wrapper
+    - name: Install sonar-scanner and build-wrapper
+      uses: sonarsource/sonarqube-github-c-cpp@v1
+      env:
+        SONAR_HOST_URL: ${{ inputs.sonar_host_url }}
+
+    # C/C++ build-wrapper
+    - name: Make and build
+      if: ${{ inputs.is_build_wrapper == 'true' }}
+      shell: bash
+      run: |
+        build-wrapper-linux-x86-64 --out-dir ${{ inputs.bw_output_path }} ${{ inputs.build_command }}
+
+    # Rust Clippy report
+    - name: Create cargo clippy report
+      if: ${{ inputs.is_rust_project == 'true' }}
+      shell: bash
+      continue-on-error: true
+      run: |
+        cargo clippy --message-format=json > ${{ inputs.clippy_report_path }}
+
+    # SonarQube Scan
+    - name: Run SonarQube Scan
+      shell: bash
+      run: |
+        SONAR_SCANNER_OPTS="-Dsonar.host.url=${{ inputs.sonar_host_url }} \
+          -Dsonar.projectKey=${{ inputs.sonar_project_key }} \
+          -Dsonar.projectName=${{ inputs.sonar_project_name }} \
+          -Dsonar.sourceEncoding=UTF-8 \
+          -Dsonar.sources=${{ inputs.analysis_sources }} \
+          -Dsonar.login=${{ inputs.sonar_token }}"
+
+        # C++ 빌드래퍼 옵션 추가
+        if [ "${{ inputs.is_build_wrapper }}" == "true" ]; then
+          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
+            -Dsonar.cfamily.build-wrapper-output=${{ inputs.bw_output_path }}"
+        else
+          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
+            -Dsonar.c.file.suffixes=- \
+            -Dsonar.cpp.file.suffixes=- \
+            -Dsonar.objc.file.suffixes=-"
+        fi
+
+        # Rust Clippy 리포트 경로 추가
+        if [ "${{ inputs.is_rust_project }}" == "true" ]; then
+          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
+            -Dcommunity.rust.clippy.reportPaths=${{ inputs.clippy_report_path }}"
+        fi
+
+        # 제외 패턴 추가
+        if [ ! -z "${{ inputs.sonar_exclusion }}" ]; then
+          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
+            -Dsonar.exclusions=${{ inputs.sonar_exclusion }}"
+        fi
+
+        # 커버리지 제외 패턴 추가
+        if [ ! -z "${{ inputs.sonar_coverage_exclusion }}" ]; then
+          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
+            -Dsonar.coverage.exclusions=${{ inputs.sonar_coverage_exclusion }}"
+        fi
+
+        # LLVM 커버리지 리포트 경로 추가
+        if [ ! -z "${{ inputs.sonar_llvm_cov_report_path }}" ]; then
+          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
+            -Dsonar.cfamily.llvm-cov.reportPath=${{ inputs.sonar_llvm_cov_report_path }}"
+        fi
+
+        sonar-scanner $SONAR_SCANNER_OPTS
