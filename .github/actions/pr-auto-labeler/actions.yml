@@ -1,0 +1,38 @@
+# .github/actions/pr-auto-labeler/actions.yml
+
+name: PR Labeler
+description: Automatically add labels to PRs based on the PR title
+
+inputs:
+  pr_title:
+    description: "PR title"
+    required: true
+  commit_message_pattern:
+    description: "Commit message pattern"
+    required: true
+  token:
+    description: "GitHub token"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Extract type from PR title
+      run: |
+        PR_TITLE="${{ inputs.pr_title }}"
+        PR_PATTERN="${{ inputs.commit_message_pattern }}"
+
+        if [[ $PR_TITLE =~ $PR_PATTERN ]]; then
+            TYPE="${BASH_REMATCH[2]}"
+            echo "Label type: ${TYPE}"
+            echo "PR_TYPE=${TYPE}" >> $GITHUB_ENV
+          else
+            echo "No valid type found in PR title"
+            exit 0
+          fi
+
+    - uses: actions-ecosystem/action-add-labels@v1
+      if: env.PR_TYPE != ''
+      with:
+        github_token: ${{ inputs.token }}
+        labels: ${{ env.PR_TYPE }}
