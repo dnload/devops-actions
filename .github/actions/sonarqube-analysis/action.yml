@@ -81,7 +81,12 @@ runs:
     - name: Run SonarQube Scan
       shell: bash
       run: |
-        SONAR_SCANNER_OPTS="-Dsonar.host.url=${{ inputs.sonar_host_url }} \
+        SONAR_URL=${{ inputs.sonar_host_url }}
+        if [[ ! $SONAR_URL =~ ^https?:// ]]; then
+          SONAR_URL="https://$SONAR_URL"
+        fi
+        
+        SONAR_SCANNER_OPTS="-Dsonar.host.url=$SONAR_URL \
           -Dsonar.projectKey=${{ inputs.sonar_project_key }} \
           -Dsonar.projectName=${{ inputs.sonar_project_name }} \
           -Dsonar.sourceEncoding=UTF-8 \
