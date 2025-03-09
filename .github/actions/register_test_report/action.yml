@@ -43,10 +43,5 @@ runs:
 
         BODY="{\"run_id\": \"$RUN_ID\", \"job_id\": \"$JOB_ID\", \"repo_name\": \"$REPO_NAME\", \"head_branch\": \"$BRANCH\", \"title\": \"$TITLE\", \"subtitle\": \"$SUBTITLE\"}"
 
-        RESPONSE=$(curl -X "$METHOD" -H "Authorization: Bearer $TOKEN" \
-                     -H "Accept: application/vnd.github+json" \
-                     -H "X-GitHub-Api-Version: 2022-11-28" \
-                     -d "$BODY" \
-                     "$BASE_URL")
-        BODY_PARSED=$(echo "$RESPONSE" | jq -c '.' | sed 's/"/\\"/g')
-        echo "body=$BODY_PARSED" >> $GITHUB_OUTPUT
+        RESPONSE=$(curl -X "$METHOD" -d "$BODY" "$BASE_URL")
+        echo "$RESPONSE"
