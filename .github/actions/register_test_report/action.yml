@@ -43,5 +43,7 @@ runs:
 
         BODY="{\"run_id\": \"$RUN_ID\", \"job_id\": \"$JOB_ID\", \"repo_name\": \"$REPO_NAME\", \"head_branch\": \"$BRANCH\", \"title\": \"$TITLE\", \"subtitle\": \"$SUBTITLE\"}"
 
-        RESPONSE=$(curl -X "$METHOD" -d "$BODY" "$BASE_URL")
+        RESPONSE=$(curl -X "$METHOD" -H "Content-Type: application/json" \
+                  -d "$BODY" \
+                  "$BASE_URL")
         echo "$RESPONSE"
