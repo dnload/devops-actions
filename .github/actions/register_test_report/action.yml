@@ -13,6 +13,9 @@ inputs:
   github_token:
     description: "GitHub token"
     required: true
+  extra_job_name:
+    description: "Extra job name"
+    required: false
 
 runs:
   using: "composite"
@@ -25,8 +28,10 @@ runs:
           "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs")
 
         JOB_NAME="${{ github.job }}"
-        
-        # job name을 그대로 사용하여 매칭
+        if [ -n "${{ inputs.extra_job_name }}" ]; then
+          JOB_NAME="${JOB_NAME} ${{ inputs.extra_job_name }}"
+        fi
+
         JOB_ID=$(echo "$JOBS_RESPONSE" | jq -r --arg job_name "$JOB_NAME" '.jobs[] | select(.name == $job_name) | .id')
         
         if [ -z "$JOB_ID" ]; then
@@ -49,8 +54,6 @@ runs:
 
         TITLE="${{ inputs.title }}"
         SUBTITLE="${{ inputs.subtitle }}"
-        TOKEN="${{ inputs.github_token }}"
-
         BODY="{\"run_id\": \"$RUN_ID\", \"job_id\": \"$JOB_ID\", \"repo_name\": \"$REPO_NAME\", \"head_branch\": \"$BRANCH\", \"title\": \"$TITLE\", \"subtitle\": \"$SUBTITLE\"}"
 
         RESPONSE=$(curl -X "$METHOD" -H "Content-Type: application/json" \
