@@ -25,8 +25,15 @@ runs:
           "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs")
 
         JOB_NAME="${{ github.job }}"
-
-        JOB_ID=$(echo "$JOBS_RESPONSE" | jq -r --arg job_name "$JOB_NAME" '.jobs[] | select(.name == $job_name).id')
+        
+        # job name을 그대로 사용하여 매칭
+        JOB_ID=$(echo "$JOBS_RESPONSE" | jq -r --arg job_name "$JOB_NAME" '.jobs[] | select(.name == $job_name) | .id')
+        
+        if [ -z "$JOB_ID" ]; then
+          echo "Error: Could not find job ID for job name: $JOB_NAME"
+          echo "JOBS_RESPONSE: $JOBS_RESPONSE"
+          exit 1
+        fi
 
         echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
 
