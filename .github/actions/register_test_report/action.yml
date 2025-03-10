@@ -29,7 +29,7 @@ runs:
 
         JOB_NAME="${{ github.job }}"
         if [ -n "${{ inputs.extra_job_name }}" ]; then
-          JOB_NAME="${JOB_NAME} ${{ inputs.extra_job_name }}"
+          JOB_NAME="${JOB_NAME} (${{ inputs.extra_job_name }})"
         fi
 
         JOB_ID=$(echo "$JOBS_RESPONSE" | jq -r --arg job_name "$JOB_NAME" '.jobs[] | select(.name == $job_name) | .id')
