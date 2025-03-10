@@ -24,6 +24,8 @@ runs:
         JOBS_RESPONSE=$(curl -s -H "Authorization: token ${{ inputs.github_token }}" \
           "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs")
         
+        echo "$JOBS_RESPONSE"
+
         JOB_ID=$(echo "$JOBS_RESPONSE" | jq -r '.jobs[] | select(.name == "${{ github.job }}").id')
         echo "job_id=$JOB_ID" >> $GITHUB_OUTPUT
 
