@@ -91,12 +91,12 @@ runs:
     - name: Run SonarQube Scan
       uses: SonarSource/sonarqube-scan-action@v5
       env:
-        SONAR_TOKEN: ${{ inputs.sonar_token }}
         SONAR_HOST_URL: ${{ steps.prepare_url.outputs.sonar_url }}
       with:
         args: >
           --define sonar.projectKey=${{ inputs.sonar_project_key }}
           --define sonar.projectName=${{ inputs.sonar_project_name }}
+          --define sonar.token=${{ inputs.sonar_token }}
           --define sonar.sourceEncoding=UTF-8
           --define sonar.sources=${{ inputs.analysis_sources }}
           --define sonar.python.version=3.8,3.9,3.10,3.11,3.12
