@@ -56,13 +56,14 @@ inputs:
 runs:
   using: "composite"
   steps:
-    # Install sonar-scanner and build-wrapper
-    - name: Install sonar-scanner and build-wrapper
-      uses: sonarsource/sonarqube-github-c-cpp@v1
+    # Install Build Wrapper
+    - name: Install Build Wrapper
+      if: ${{ inputs.is_build_wrapper == 'true' }}
+      uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v5
       env:
         SONAR_HOST_URL: ${{ inputs.sonar_host_url }}
 
-    # C/C++ build-wrapper
+    # Legacy C/C++ build-wrapper
     - name: Make and build
       if: ${{ inputs.is_build_wrapper == 'true' }}
       shell: bash
@@ -77,68 +78,28 @@ runs:
       run: |
         cargo clippy --message-format=json > ${{ inputs.clippy_report_path }}
 
-    # SonarQube Scan
     - name: Run SonarQube Scan
-      shell: bash
-      run: |
-        SONAR_URL=${{ inputs.sonar_host_url }}
-        if [[ ! $SONAR_URL =~ ^https?:// ]]; then
-          SONAR_URL="https://$SONAR_URL"
-        fi
-        
-        SONAR_SCANNER_OPTS="-Dsonar.host.url=$SONAR_URL \
-          -Dsonar.projectKey=${{ inputs.sonar_project_key }} \
-          -Dsonar.projectName=${{ inputs.sonar_project_name }} \
-          -Dsonar.sourceEncoding=UTF-8 \
-          -Dsonar.sources=${{ inputs.analysis_sources }} \
-          -Dsonar.token=${{ inputs.sonar_token }} \
-          -Dsonar.python.version=3.8, 3.9, 3.10, 3.11, 3.12"
-
-        # C++ 빌드래퍼 옵션 추가
-        if [ "${{ inputs.is_build_wrapper }}" == "true" ]; then
-          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
-            -Dsonar.cfamily.build-wrapper-output=${{ inputs.bw_output_path }}"
-        else
-          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
-            -Dsonar.c.file.suffixes=- \
-            -Dsonar.cpp.file.suffixes=- \
-            -Dsonar.objc.file.suffixes=-"
-        fi
-
-        # Rust Clippy 리포트 경로 추가
-        if [ "${{ inputs.is_rust_project }}" == "true" ]; then
-          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
-            -Dcommunity.rust.clippy.reportPaths=${{ inputs.clippy_report_path }}"
-        fi
-
-        # 제외 패턴 추가
-        if [ ! -z "${{ inputs.sonar_exclusions }}" ]; then
-          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
-            -Dsonar.exclusions=${{ inputs.sonar_exclusions }}"
-        fi
-
-        # 커버리지 제외 패턴 추가
-        if [ ! -z "${{ inputs.sonar_coverage_exclusions }}" ]; then
-          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
-            -Dsonar.coverage.exclusions=${{ inputs.sonar_coverage_exclusions }}"
-        fi
-
-        # LLVM 커버리지 리포트 경로 추가
-        if [ ! -z "${{ inputs.sonar_llvm_cov_report_path }}" ]; then
-          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
-            -Dsonar.cfamily.llvm-cov.reportPath=${{ inputs.sonar_llvm_cov_report_path }}"
-        fi
-
-        if [ "${{ inputs.sonar_quality_gate }}" == "true" ]; then
-          SONAR_SCANNER_OPTS="$SONAR_SCANNER_OPTS \
-            -Dsonar.qualitygate.wait=true"
-        fi
-
-        sonar-scanner $SONAR_SCANNER_OPTS
+      uses: SonarSource/sonarqube-scan-action@v5
+      env:
+        SONAR_TOKEN: ${{ inputs.sonar_token }}
+        SONAR_HOST_URL: ${{ inputs.sonar_host_url }}
+      with:
+        args: >
+          --define sonar.projectKey=${{ inputs.sonar_project_key }}
+          --define sonar.projectName=${{ inputs.sonar_project_name }}
+          --define sonar.sourceEncoding=UTF-8
+          --define sonar.sources=${{ inputs.analysis_sources }}
+          --define sonar.python.version=3.8,3.9,3.10,3.11,3.12
+          ${{ inputs.is_build_wrapper == 'true' && '--define sonar.cfamily.compile-commands=build/compile_commands.json' || '' }}
+          ${{ inputs.is_rust_project == 'true' && '--define community.rust.clippy.reportPaths=${{ inputs.clippy_report_path }}' || '' }}
+          ${{ inputs.sonar_exclusions != '' && '--define sonar.exclusions=${{ inputs.sonar_exclusions }}' || '' }}
+          ${{ inputs.sonar_coverage_exclusions != '' && '--define sonar.coverage.exclusions=${{ inputs.sonar_coverage_exclusions }}' || '' }}
+          ${{ inputs.sonar_llvm_cov_report_path != '' && '--define sonar.cfamily.llvm-cov.reportPath=${{ inputs.sonar_llvm_cov_report_path }}' || '' }}
+          ${{ inputs.sonar_quality_gate == 'true' && '--define sonar.qualitygate.wait=true' || '' }}
 
     - name: SonarQube Quality Gate
       if: ${{ inputs.sonar_quality_gate == 'true' }}
-      uses: sonarsource/sonarqube-quality-gate-action@master
+      uses: sonarsource/sonarqube-quality-gate-action@v1.1.0
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
         SONAR_HOST_URL: ${{ inputs.sonar_host_url }}
