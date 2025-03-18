@@ -93,10 +93,10 @@ runs:
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
         SONAR_HOST_URL: ${{ steps.prepare_url.outputs.sonar_url }}
-        SONAR_PROJECT_KEY: ${{ inputs.sonar_project_key }}
-        SONAR_PROJECT_NAME: ${{ inputs.sonar_project_name }}
       with:
         args: >
+          --define sonar.projectKey=${{ inputs.sonar_project_key }}
+          --define sonar.projectName=${{ inputs.sonar_project_name }}
           --define sonar.sources=${{ inputs.analysis_sources }}
           --define sonar.sourceEncoding=UTF-8
           --define sonar.python.version=3.8,3.9,3.10,3.11,3.12
