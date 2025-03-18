@@ -91,7 +91,8 @@ runs:
           -Dsonar.projectName=${{ inputs.sonar_project_name }} \
           -Dsonar.sourceEncoding=UTF-8 \
           -Dsonar.sources=${{ inputs.analysis_sources }} \
-          -Dsonar.login=${{ inputs.sonar_token }}"
+          -Dsonar.token=${{ inputs.sonar_token }} \
+          -Dsonar.python.version=3.8, 3.9, 3.10, 3.11, 3.12"
 
         # C++ 빌드래퍼 옵션 추가
         if [ "${{ inputs.is_build_wrapper }}" == "true" ]; then
