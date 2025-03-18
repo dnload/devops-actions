@@ -78,11 +78,21 @@ runs:
       run: |
         cargo clippy --message-format=json > ${{ inputs.clippy_report_path }}
 
+    - name: Prepare SonarQube URL
+      id: prepare_url
+      shell: bash
+      run: |
+        SONAR_URL="${{ inputs.sonar_host_url }}"
+        if [[ ! $SONAR_URL =~ ^https?:// ]]; then
+          SONAR_URL="https://$SONAR_URL"
+        fi
+        echo "sonar_url=$SONAR_URL" >> $GITHUB_OUTPUT
+
     - name: Run SonarQube Scan
       uses: SonarSource/sonarqube-scan-action@v5
       env:
         SONAR_TOKEN: ${{ inputs.sonar_token }}
-        SONAR_HOST_URL: ${{ inputs.sonar_host_url }}
+        SONAR_HOST_URL: ${{ steps.prepare_url.outputs.sonar_url }}
       with:
         args: >
           --define sonar.projectKey=${{ inputs.sonar_project_key }}
