@@ -90,11 +90,10 @@ runs:
           --define sonar.sourceEncoding=UTF-8
           --define sonar.sources=${{ inputs.analysis_sources }}
           --define sonar.python.version=3.8,3.9,3.10,3.11,3.12
-          ${{ inputs.is_build_wrapper == 'true' && '--define sonar.cfamily.compile-commands=build/compile_commands.json' || '' }}
-          ${{ inputs.is_rust_project == 'true' && '--define community.rust.clippy.reportPaths=${{ inputs.clippy_report_path }}' || '' }}
-          ${{ inputs.sonar_exclusions != '' && '--define sonar.exclusions=${{ inputs.sonar_exclusions }}' || '' }}
-          ${{ inputs.sonar_coverage_exclusions != '' && '--define sonar.coverage.exclusions=${{ inputs.sonar_coverage_exclusions }}' || '' }}
-          ${{ inputs.sonar_llvm_cov_report_path != '' && '--define sonar.cfamily.llvm-cov.reportPath=${{ inputs.sonar_llvm_cov_report_path }}' || '' }}
+          --define sonar.cfamily.compile-commands=${{ inputs.bw_output_path }}/compile_commands.json
+          --define sonar.exclusions="${{ inputs.sonar_exclusions }}"
+          --define sonar.coverage.exclusions="${{ inputs.sonar_coverage_exclusions }}"
+          --define sonar.cfamily.llvm-cov.reportPath="${{ inputs.sonar_llvm_cov_report_path }}"
           ${{ inputs.sonar_quality_gate == 'true' && '--define sonar.qualitygate.wait=true' || '' }}
 
     - name: SonarQube Quality Gate
